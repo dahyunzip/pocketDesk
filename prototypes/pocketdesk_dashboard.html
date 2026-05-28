@@ -1,0 +1,298 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.pd-root{background:#F5F4EF;min-height:100vh;padding:0;font-family:var(--font-sans)}
+.pd-header{background:#fff;border-bottom:1.5px solid #E8E6DF;padding:0 24px;height:52px;display:flex;align-items:center;justify-content:space-between}
+.pd-logo{font-size:16px;font-weight:500;color:#3D3BE8;letter-spacing:-0.3px;display:flex;align-items:center;gap:8px}
+.pd-logo-dot{width:8px;height:8px;background:#FFD166;border-radius:50%}
+.pd-header-right{display:flex;align-items:center;gap:16px;font-size:13px;color:#888780}
+.pd-grid{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:auto auto auto;gap:14px;padding:20px 20px 28px;max-width:1100px}
+.pd-card{background:#fff;border-radius:16px;border:1.5px solid #E8E6DF;padding:16px;overflow:hidden}
+.pd-card-label{font-size:11px;font-weight:500;color:#B4B2A9;letter-spacing:0.6px;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.pd-card-label i{font-size:14px;color:#B4B2A9}
+
+.weather-card{background:#5B58E8;border-color:#4A47D0;color:#fff}
+.weather-big{font-size:42px;font-weight:500;color:#fff;line-height:1}
+.weather-sub{font-size:13px;color:rgba(255,255,255,0.7);margin-top:4px}
+.weather-icon{font-size:48px;color:rgba(255,255,255,0.25)}
+.weather-row{display:flex;justify-content:space-between;align-items:flex-end}
+.weather-tags{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.weather-tag{background:rgba(255,255,255,0.18);border-radius:20px;padding:3px 10px;font-size:12px;color:#fff}
+
+.bus-card{background:#FFD166;border-color:#F0C040}
+.bus-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,0,0,0.06)}
+.bus-row:last-child{border-bottom:none}
+.bus-no{font-size:15px;font-weight:500;color:#412402}
+.bus-time{font-size:13px;color:#633806}
+.bus-badge{background:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:500;color:#412402}
+
+.dday-card{}
+.dday-list{display:flex;flex-direction:column;gap:8px}
+.dday-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;background:#F5F4EF}
+.dday-title{font-size:13px;color:#2D2D2D}
+.dday-badge{font-size:12px;font-weight:500;border-radius:20px;padding:2px 10px}
+.dday-red{background:#FCEBEB;color:#A32D2D}
+.dday-blue{background:#E6F1FB;color:#185FA5}
+.dday-gray{background:#F1EFE8;color:#5F5E5A}
+
+.bookmark-card{grid-column:1/3}
+.bm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.bm-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:12px;background:#F5F4EF;cursor:pointer;transition:background 0.15s}
+.bm-item:hover{background:#EEEDFE}
+.bm-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.bm-name{font-size:11px;color:#5F5E5A;text-align:center;line-height:1.3}
+.bm-cat{font-size:10px;color:#B4B2A9;margin-top:1px}
+
+.memo-card{}
+.memo-list{display:flex;flex-direction:column;gap:6px}
+.memo-item{padding:8px 10px;border-radius:10px;background:#F5F4EF;cursor:pointer;border-left:3px solid #CECBF6}
+.memo-title{font-size:13px;color:#2D2D2D;font-weight:500}
+.memo-date{font-size:11px;color:#B4B2A9;margin-top:2px}
+
+.kanban-card{grid-column:1/4}
+.kb-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kb-col{background:#F5F4EF;border-radius:12px;padding:10px}
+.kb-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.kb-col-title{font-size:12px;font-weight:500}
+.kb-count{font-size:11px;background:#fff;border-radius:20px;padding:1px 8px;color:#888780}
+.kb-task{background:#fff;border-radius:8px;padding:9px 10px;margin-bottom:6px;border:1.5px solid #E8E6DF;cursor:grab}
+.kb-task:last-child{margin-bottom:0}
+.kb-task-title{font-size:13px;color:#2D2D2D}
+.kb-task-tag{display:inline-block;margin-top:5px;font-size:11px;border-radius:20px;padding:1px 8px}
+.tag-purple{background:#EEEDFE;color:#534AB7}
+.tag-teal{background:#E1F5EE;color:#0F6E56}
+.tag-coral{background:#FAECE7;color:#993C1D}
+.tag-gray{background:#F1EFE8;color:#5F5E5A}
+.kb-todo .kb-col-title{color:#888780}
+.kb-inprogress .kb-col-title{color:#185FA5}
+.kb-done .kb-col-title{color:#3B6D11}
+.kb-hold .kb-col-title{color:#854F0B}
+.kb-inprogress{border-top:3px solid #85B7EB;border-radius:0 0 12px 12px}
+</style>
+
+<div class="pd-root">
+  <header class="pd-header">
+    <div class="pd-logo">
+      <div class="pd-logo-dot"></div>
+      PocketDesk
+    </div>
+    <div class="pd-header-right">
+      <i class="ti ti-bookmark" style="font-size:18px" aria-hidden="true"></i>
+      <i class="ti ti-notes" style="font-size:18px" aria-hidden="true"></i>
+      <i class="ti ti-calendar" style="font-size:18px" aria-hidden="true"></i>
+      <i class="ti ti-layout-kanban" style="font-size:18px" aria-hidden="true"></i>
+    </div>
+  </header>
+
+  <div class="pd-grid">
+
+    <div class="pd-card weather-card">
+      <div class="pd-card-label" style="color:rgba(255,255,255,0.5)">
+        <i class="ti ti-cloud"></i> 부산 날씨
+      </div>
+      <div class="weather-row">
+        <div>
+          <div class="weather-big">23°</div>
+          <div class="weather-sub">맑음 · 체감 21°</div>
+        </div>
+        <i class="ti ti-sun weather-icon" aria-hidden="true"></i>
+      </div>
+      <div class="weather-tags">
+        <span class="weather-tag">습도 58%</span>
+        <span class="weather-tag">바람 3m/s</span>
+        <span class="weather-tag">미세먼지 좋음</span>
+      </div>
+    </div>
+
+    <div class="pd-card bus-card">
+      <div class="pd-card-label" style="color:#633806">
+        <i class="ti ti-bus" style="color:#633806"></i> 버스 도착
+      </div>
+      <div class="bus-row">
+        <div>
+          <div class="bus-no">51번</div>
+          <div class="bus-time">센텀시티 방향</div>
+        </div>
+        <span class="bus-badge">3분 후</span>
+      </div>
+      <div class="bus-row">
+        <div>
+          <div class="bus-no">139번</div>
+          <div class="bus-time">해운대 방향</div>
+        </div>
+        <span class="bus-badge">11분 후</span>
+      </div>
+      <div class="bus-row">
+        <div>
+          <div class="bus-no">51번</div>
+          <div class="bus-time">센텀시티 방향</div>
+        </div>
+        <span class="bus-badge">18분 후</span>
+      </div>
+    </div>
+
+    <div class="pd-card dday-card">
+      <div class="pd-card-label">
+        <i class="ti ti-calendar-event"></i> 마감 D-Day
+      </div>
+      <div class="dday-list">
+        <div class="dday-item">
+          <span class="dday-title">정부 CMS 제안서 제출</span>
+          <span class="dday-badge dday-red">D-2</span>
+        </div>
+        <div class="dday-item">
+          <span class="dday-title">moo WMS 1차 릴리즈</span>
+          <span class="dday-badge dday-red">D-5</span>
+        </div>
+        <div class="dday-item">
+          <span class="dday-title">클라이언트 중간 보고</span>
+          <span class="dday-badge dday-blue">D-12</span>
+        </div>
+        <div class="dday-item">
+          <span class="dday-title">전세 계약 갱신 협의</span>
+          <span class="dday-badge dday-gray">D-31</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pd-card bookmark-card">
+      <div class="pd-card-label">
+        <i class="ti ti-bookmark"></i> 북마크
+      </div>
+      <div class="bm-grid">
+        <div class="bm-item">
+          <div class="bm-icon" style="background:#EEEDFE"><i class="ti ti-brand-vue" style="color:#534AB7"></i></div>
+          <div class="bm-name">Vue 공식 문서</div>
+          <div class="bm-cat">Docs</div>
+        </div>
+        <div class="bm-item">
+          <div class="bm-icon" style="background:#E1F5EE"><i class="ti ti-brand-nuxt" style="color:#0F6E56"></i></div>
+          <div class="bm-name">Nuxt 공식 문서</div>
+          <div class="bm-cat">Docs</div>
+        </div>
+        <div class="bm-item">
+          <div class="bm-icon" style="background:#E6F1FB"><i class="ti ti-database" style="color:#185FA5"></i></div>
+          <div class="bm-name">pgAdmin</div>
+          <div class="bm-cat">DB</div>
+        </div>
+        <div class="bm-item">
+          <div class="bm-icon" style="background:#FAECE7"><i class="ti ti-brand-figma" style="color:#993C1D"></i></div>
+          <div class="bm-name">Figma</div>
+          <div class="bm-cat">Design</div>
+        </div>
+        <div class="bm-item">
+          <div class="bm-icon" style="background:#F5F4EF"><i class="ti ti-brand-github" style="color:#2C2C2A"></i></div>
+          <div class="bm-name">GitHub</div>
+          <div class="bm-cat">Dev</div>
+        </div>
+        <div class="bm-item">
+          <div class="bm-icon" style="background:#FFF3D6"><i class="ti ti-brand-vercel" style="color:#412402"></i></div>
+          <div class="bm-name">Vercel</div>
+          <div class="bm-cat">Deploy</div>
+        </div>
+        <div class="bm-item">
+          <div class="bm-icon" style="background:#EEEDFE"><i class="ti ti-code" style="color:#534AB7"></i></div>
+          <div class="bm-name">Claude Code</div>
+          <div class="bm-cat">AI</div>
+        </div>
+        <div class="bm-item" style="border:1.5px dashed #E8E6DF;background:#fff">
+          <div class="bm-icon" style="background:#F5F4EF"><i class="ti ti-plus" style="color:#B4B2A9"></i></div>
+          <div class="bm-name" style="color:#B4B2A9">추가</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pd-card memo-card">
+      <div class="pd-card-label">
+        <i class="ti ti-notes"></i> 최근 메모
+      </div>
+      <div class="memo-list">
+        <div class="memo-item">
+          <div class="memo-title">칸반 DnD 구현 메모</div>
+          <div class="memo-date">2025.05.28</div>
+        </div>
+        <div class="memo-item" style="border-left-color:#9FE1CB">
+          <div class="memo-title">CMS 접근성 체크리스트</div>
+          <div class="memo-date">2025.05.26</div>
+        </div>
+        <div class="memo-item" style="border-left-color:#FAC775">
+          <div class="memo-title">전세 협상 포인트 정리</div>
+          <div class="memo-date">2025.05.24</div>
+        </div>
+        <div class="memo-item" style="border-left-color:#F5C4B3">
+          <div class="memo-title">moo WMS DB 스키마 초안</div>
+          <div class="memo-date">2025.05.22</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pd-card kanban-card">
+      <div class="pd-card-label">
+        <i class="ti ti-layout-kanban"></i> 칸반 보드
+      </div>
+      <div class="kb-cols">
+        <div class="kb-col kb-todo">
+          <div class="kb-col-header">
+            <span class="kb-col-title">할 일</span>
+            <span class="kb-count">3</span>
+          </div>
+          <div class="kb-task">
+            <div class="kb-task-title">날씨 API 연동</div>
+            <span class="kb-task-tag tag-purple">Feature</span>
+          </div>
+          <div class="kb-task">
+            <div class="kb-task-title">마크다운 에디터 세팅</div>
+            <span class="kb-task-tag tag-gray">Setup</span>
+          </div>
+          <div class="kb-task">
+            <div class="kb-task-title">달력 컴포넌트 분리</div>
+            <span class="kb-task-tag tag-purple">Feature</span>
+          </div>
+        </div>
+        <div class="kb-col kb-inprogress">
+          <div class="kb-col-header">
+            <span class="kb-col-title">진행 중</span>
+            <span class="kb-count">2</span>
+          </div>
+          <div class="kb-task" style="border-color:#B5D4F4">
+            <div class="kb-task-title">칸반 DnD 구현</div>
+            <span class="kb-task-tag tag-purple">Feature</span>
+          </div>
+          <div class="kb-task" style="border-color:#B5D4F4">
+            <div class="kb-task-title">DB 모델 세팅</div>
+            <span class="kb-task-tag tag-gray">Setup</span>
+          </div>
+        </div>
+        <div class="kb-col kb-done">
+          <div class="kb-col-header">
+            <span class="kb-col-title">완료</span>
+            <span class="kb-count">3</span>
+          </div>
+          <div class="kb-task">
+            <div class="kb-task-title">nuxt.config 초기 설정</div>
+            <span class="kb-task-tag tag-teal">Done</span>
+          </div>
+          <div class="kb-task">
+            <div class="kb-task-title">CLAUDE.md 작성</div>
+            <span class="kb-task-tag tag-teal">Done</span>
+          </div>
+          <div class="kb-task">
+            <div class="kb-task-title">프로젝트 디렉토리 구성</div>
+            <span class="kb-task-tag tag-teal">Done</span>
+          </div>
+        </div>
+        <div class="kb-col kb-hold">
+          <div class="kb-col-header">
+            <span class="kb-col-title">보류</span>
+            <span class="kb-count">1</span>
+          </div>
+          <div class="kb-task">
+            <div class="kb-task-title">버스 정류장 ID 확인 필요</div>
+            <span class="kb-task-tag tag-coral">Blocked</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

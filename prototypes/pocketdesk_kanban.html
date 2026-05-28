@@ -1,0 +1,167 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.pd{background:#F5F4EF;min-height:600px;font-family:var(--font-sans);padding:20px}
+.pd-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.pd-title{font-size:16px;font-weight:500;color:#2D2D2D;display:flex;align-items:center;gap:8px}
+.pd-title i{color:#5B58E8;font-size:18px}
+.pd-btn{background:#5B58E8;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+.pd-btn:hover{background:#4A47D0}
+.kb-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
+.kb-col{background:#fff;border-radius:14px;border:1.5px solid #E8E6DF;padding:12px;min-height:300px}
+.kb-col-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:10px;border-bottom:1.5px solid #F0EEE8}
+.kb-col-title{font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px}
+.kb-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.kb-count{font-size:11px;background:#F5F4EF;border-radius:20px;padding:2px 8px;color:#888780}
+.kb-add{background:none;border:none;cursor:pointer;color:#B4B2A9;font-size:16px;line-height:1;padding:2px}
+.kb-add:hover{color:#5B58E8}
+.kb-task{background:#F8F7F3;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1.5px solid #E8E6DF;cursor:grab;transition:box-shadow 0.15s,opacity 0.15s;user-select:none}
+.kb-task:active{cursor:grabbing;opacity:0.7}
+.kb-task.drag-over-top{border-top:2px solid #5B58E8}
+.kb-task.drag-over-bot{border-bottom:2px solid #5B58E8}
+.kb-task-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.kb-task-title{font-size:13px;color:#2D2D2D;line-height:1.4;flex:1}
+.kb-del{background:none;border:none;cursor:pointer;color:#D3D1C7;font-size:14px;padding:0;line-height:1;flex-shrink:0}
+.kb-del:hover{color:#E24B4A}
+.kb-tag{display:inline-block;margin-top:6px;font-size:11px;border-radius:20px;padding:2px 8px}
+.t-feature{background:#EEEDFE;color:#534AB7}
+.t-setup{background:#F1EFE8;color:#5F5E5A}
+.t-bug{background:#FAECE7;color:#993C1D}
+.t-done{background:#E1F5EE;color:#0F6E56}
+.t-blocked{background:#FAECE7;color:#993C1D}
+.kb-col-drop{border:1.5px dashed #CECBF6;background:#FAFAFA}
+.modal-bg{position:absolute;inset:0;background:rgba(45,45,45,0.3);display:flex;align-items:center;justify-content:center;border-radius:16px;z-index:10}
+.modal{background:#fff;border-radius:16px;padding:20px;width:300px;border:1.5px solid #E8E6DF}
+.modal-title{font-size:15px;font-weight:500;color:#2D2D2D;margin-bottom:14px}
+.modal input,.modal select{width:100%;border:1.5px solid #E8E6DF;border-radius:10px;padding:9px 12px;font-size:13px;color:#2D2D2D;background:#F8F7F3;outline:none;margin-bottom:10px}
+.modal input:focus,.modal select:focus{border-color:#5B58E8;background:#fff}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.btn-cancel{background:none;border:1.5px solid #E8E6DF;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;color:#888780}
+.btn-ok{background:#5B58E8;border:none;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;color:#fff;font-weight:500}
+.kb-empty{text-align:center;padding:20px 0;color:#D3D1C7;font-size:12px}
+</style>
+
+<div class="pd" style="position:relative" id="app">
+  <div class="pd-header">
+    <div class="pd-title"><i class="ti ti-layout-kanban" aria-hidden="true"></i> 칸반 보드</div>
+    <button class="pd-btn" onclick="openModal()"><i class="ti ti-plus" style="font-size:14px"></i> 태스크 추가</button>
+  </div>
+  <div class="kb-cols" id="kb-cols"></div>
+
+  <div class="modal-bg" id="modal" style="display:none">
+    <div class="modal">
+      <div class="modal-title">새 태스크</div>
+      <input id="task-title" placeholder="태스크 이름" maxlength="40">
+      <select id="task-col">
+        <option value="todo">할 일</option>
+        <option value="inprogress">진행 중</option>
+        <option value="done">완료</option>
+        <option value="hold">보류</option>
+      </select>
+      <select id="task-tag">
+        <option value="feature">Feature</option>
+        <option value="setup">Setup</option>
+        <option value="bug">Bug</option>
+        <option value="blocked">Blocked</option>
+      </select>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">취소</button>
+        <button class="btn-ok" onclick="addTask()">추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLS = [
+  {id:'todo',    label:'할 일',   dot:'#ADB5BD'},
+  {id:'inprogress',label:'진행 중',dot:'#4DABF7'},
+  {id:'done',    label:'완료',    dot:'#51CF66'},
+  {id:'hold',    label:'보류',    dot:'#FFA94D'}
+];
+const TAG_MAP = {feature:'t-feature',setup:'t-setup',bug:'t-bug',blocked:'t-blocked',done:'t-done'};
+const TAG_LBL = {feature:'Feature',setup:'Setup',bug:'Bug',blocked:'Blocked',done:'Done'};
+
+let tasks = [
+  {id:1,title:'날씨 API 연동',col:'todo',tag:'feature'},
+  {id:2,title:'마크다운 에디터 세팅',col:'todo',tag:'setup'},
+  {id:3,title:'달력 컴포넌트 분리',col:'todo',tag:'feature'},
+  {id:4,title:'칸반 DnD 구현',col:'inprogress',tag:'feature'},
+  {id:5,title:'DB 모델 세팅',col:'inprogress',tag:'setup'},
+  {id:6,title:'nuxt.config 초기 설정',col:'done',tag:'setup'},
+  {id:7,title:'CLAUDE.md 작성',col:'done',tag:'setup'},
+  {id:8,title:'버스 정류장 ID 확인 필요',col:'hold',tag:'blocked'}
+];
+let nextId = 9;
+let dragging = null;
+
+function render(){
+  const wrap = document.getElementById('kb-cols');
+  wrap.innerHTML = '';
+  COLS.forEach(col=>{
+    const colTasks = tasks.filter(t=>t.col===col.id);
+    const div = document.createElement('div');
+    div.className = 'kb-col';
+    div.dataset.col = col.id;
+    div.innerHTML = `
+      <div class="kb-col-hd">
+        <span class="kb-col-title">
+          <span class="kb-dot" style="background:${col.dot}"></span>${col.label}
+        </span>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="kb-count">${colTasks.length}</span>
+          <button class="kb-add" onclick="openModal('${col.id}')" aria-label="태스크 추가"><i class="ti ti-plus"></i></button>
+        </div>
+      </div>
+      ${colTasks.length===0?'<div class="kb-empty">태스크 없음</div>':''}
+    `;
+    colTasks.forEach(t=>{
+      const card = document.createElement('div');
+      card.className = 'kb-task';
+      card.draggable = true;
+      card.dataset.id = t.id;
+      card.innerHTML = `
+        <div class="kb-task-row">
+          <span class="kb-task-title">${t.title}</span>
+          <button class="kb-del" onclick="delTask(${t.id})" aria-label="삭제"><i class="ti ti-x"></i></button>
+        </div>
+        <span class="kb-tag ${TAG_MAP[t.tag]||'t-setup'}">${TAG_LBL[t.tag]||t.tag}</span>
+      `;
+      card.addEventListener('dragstart',e=>{dragging=t.id;e.dataTransfer.effectAllowed='move'});
+      card.addEventListener('dragend',()=>{dragging=null;render()});
+      div.appendChild(card);
+    });
+
+    div.addEventListener('dragover',e=>{e.preventDefault();div.classList.add('kb-col-drop')});
+    div.addEventListener('dragleave',()=>div.classList.remove('kb-col-drop'));
+    div.addEventListener('drop',e=>{
+      e.preventDefault();
+      div.classList.remove('kb-col-drop');
+      if(dragging==null)return;
+      const t = tasks.find(x=>x.id===dragging);
+      if(t) t.col = col.id;
+      render();
+    });
+    wrap.appendChild(div);
+  });
+}
+
+function openModal(colId){
+  document.getElementById('modal').style.display='flex';
+  const sel = document.getElementById('task-col');
+  if(colId) sel.value=colId;
+  document.getElementById('task-title').focus();
+}
+function closeModal(){document.getElementById('modal').style.display='none';document.getElementById('task-title').value='';}
+function addTask(){
+  const title = document.getElementById('task-title').value.trim();
+  if(!title)return;
+  const col = document.getElementById('task-col').value;
+  const tag = document.getElementById('task-tag').value;
+  tasks.push({id:nextId++,title,col,tag});
+  closeModal();render();
+}
+function delTask(id){tasks=tasks.filter(t=>t.id!==id);render();}
+document.getElementById('task-title').addEventListener('keydown',e=>{if(e.key==='Enter')addTask()});
+render();
+</script>

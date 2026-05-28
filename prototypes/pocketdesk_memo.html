@@ -1,0 +1,153 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.pd{background:#F5F4EF;font-family:var(--font-sans);padding:20px;min-height:520px}
+.pd-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.pd-title{font-size:16px;font-weight:500;color:#2D2D2D;display:flex;align-items:center;gap:8px}
+.pd-title i{color:#5B58E8;font-size:18px}
+.pd-btn{background:#5B58E8;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+.pd-btn:hover{background:#4A47D0}
+.memo-layout{display:grid;grid-template-columns:220px 1fr;gap:14px;min-height:440px}
+.memo-list{display:flex;flex-direction:column;gap:6px}
+.memo-item{background:#fff;border-radius:12px;border:1.5px solid #E8E6DF;padding:11px 12px;cursor:pointer;transition:border-color 0.15s;display:flex;flex-direction:column;gap:3px;position:relative}
+.memo-item:hover{border-color:#CECBF6}
+.memo-item.active{border-color:#5B58E8;background:#FAFAFE}
+.memo-item-title{font-size:13px;color:#2D2D2D;font-weight:500;padding-right:20px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.memo-item-date{font-size:11px;color:#B4B2A9}
+.memo-item-preview{font-size:11px;color:#B4B2A9;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.memo-item-del{position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer;color:#D3D1C7;font-size:14px;display:none}
+.memo-item:hover .memo-item-del{display:block}
+.memo-item-del:hover{color:#E24B4A}
+.memo-editor{background:#fff;border-radius:14px;border:1.5px solid #E8E6DF;display:flex;flex-direction:column;overflow:hidden}
+.memo-editor-top{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1.5px solid #F0EEE8}
+.memo-tab{background:none;border:none;cursor:pointer;font-size:12px;color:#B4B2A9;padding:4px 10px;border-radius:6px}
+.memo-tab.active{background:#EEEDFE;color:#534AB7;font-weight:500}
+.memo-title-input{flex:1;border:none;outline:none;font-size:14px;font-weight:500;color:#2D2D2D;background:transparent}
+.memo-body{flex:1;padding:14px;display:flex;gap:0}
+.memo-textarea{width:100%;min-height:300px;border:none;outline:none;font-size:13px;color:#2D2D2D;background:transparent;resize:none;line-height:1.7;font-family:var(--font-mono)}
+.memo-preview{width:100%;min-height:300px;font-size:13px;color:#2D2D2D;line-height:1.7;overflow-y:auto}
+.memo-preview h1,.memo-preview h2,.memo-preview h3{font-weight:500;margin:8px 0 4px}
+.memo-preview h1{font-size:16px}.memo-preview h2{font-size:14px}.memo-preview h3{font-size:13px}
+.memo-preview p{margin-bottom:8px}
+.memo-preview code{background:#F1EFE8;border-radius:4px;padding:1px 5px;font-size:12px;font-family:var(--font-mono)}
+.memo-preview pre{background:#F1EFE8;border-radius:8px;padding:10px;margin-bottom:8px;overflow-x:auto}
+.memo-preview pre code{background:none;padding:0}
+.memo-preview ul,.memo-preview ol{padding-left:18px;margin-bottom:8px}
+.memo-preview li{margin-bottom:3px}
+.memo-save-row{padding:10px 14px;border-top:1.5px solid #F0EEE8;display:flex;justify-content:space-between;align-items:center}
+.memo-save-hint{font-size:11px;color:#B4B2A9}
+.btn-save{background:#5B58E8;border:none;border-radius:8px;padding:6px 14px;font-size:12px;cursor:pointer;color:#fff;font-weight:500}
+.memo-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#B4B2A9;font-size:13px;gap:8px}
+</style>
+
+<div class="pd">
+  <div class="pd-header">
+    <div class="pd-title"><i class="ti ti-notes" aria-hidden="true"></i> 메모</div>
+    <button class="pd-btn" onclick="newMemo()"><i class="ti ti-plus" style="font-size:14px"></i> 새 메모</button>
+  </div>
+  <div class="memo-layout">
+    <div class="memo-list" id="memo-list"></div>
+    <div class="memo-editor" id="memo-editor">
+      <div class="memo-editor-top">
+        <input class="memo-title-input" id="memo-title-input" placeholder="제목 없음" oninput="onTitleChange()">
+        <button class="memo-tab active" id="tab-edit" onclick="setTab('edit')">편집</button>
+        <button class="memo-tab" id="tab-prev" onclick="setTab('preview')">미리보기</button>
+      </div>
+      <div class="memo-body">
+        <textarea class="memo-textarea" id="memo-textarea" placeholder="마크다운으로 작성하세요..." oninput="onBodyChange()"></textarea>
+        <div class="memo-preview" id="memo-preview" style="display:none"></div>
+      </div>
+      <div class="memo-save-row">
+        <span class="memo-save-hint" id="save-hint">자동 저장됩니다</span>
+        <button class="btn-save" onclick="saveMemo()">저장</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let memos = [
+  {id:1,title:'칸반 DnD 구현 메모',body:'## 핵심 로직\n\n- `draggable` 속성 활용\n- `dragstart` / `drop` 이벤트 처리\n- 드롭 후 `PUT /api/tasks/[id]` 호출\n\n```js\ncard.addEventListener("dragstart", e => {\n  dragging = task.id\n})\n```',date:'2025.05.28'},
+  {id:2,title:'CMS 접근성 체크리스트',body:'## KWCAG 2.1\n\n- 대체 텍스트 제공\n- 키보드 접근성\n- 충분한 색상 대비 (4.5:1)\n- 초점 이동 순서',date:'2025.05.26'},
+  {id:3,title:'전세 협상 포인트',body:'- 시세 대비 현재 계약가 확인\n- 갱신 청구권 여부\n- 계약 기간 협의',date:'2025.05.24'},
+];
+let nextId=4, activeId=1, tab='edit', saveTimer=null;
+
+function md(text){
+  return text
+    .replace(/```(\w*)\n([\s\S]*?)```/g,(_,l,c)=>`<pre><code>${esc(c.trim())}</code></pre>`)
+    .replace(/### (.+)/g,'<h3>$1</h3>')
+    .replace(/## (.+)/g,'<h2>$1</h2>')
+    .replace(/# (.+)/g,'<h1>$1</h1>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')
+    .replace(/\*(.+?)\*/g,'<i>$1</i>')
+    .replace(/^- (.+)/gm,'<li>$1</li>').replace(/(<li>.*<\/li>)/s,'<ul>$1</ul>')
+    .replace(/\n{2,}/g,'</p><p>').replace(/^(?!<[hpuo])/gm,'').replace(/^(.+)$/gm,(l)=>l.startsWith('<')?l:`<p>${l}</p>`);
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function renderList(){
+  const el = document.getElementById('memo-list');
+  el.innerHTML = memos.map(m=>`
+    <div class="memo-item${m.id===activeId?' active':''}" onclick="selectMemo(${m.id})">
+      <button class="memo-item-del" onclick="event.stopPropagation();delMemo(${m.id})" aria-label="삭제"><i class="ti ti-x"></i></button>
+      <div class="memo-item-title">${m.title||'제목 없음'}</div>
+      <div class="memo-item-date">${m.date}</div>
+      <div class="memo-item-preview">${(m.body||'').replace(/[#`*\n]/g,' ').slice(0,30)}</div>
+    </div>
+  `).join('');
+}
+function renderEditor(){
+  const m = memos.find(x=>x.id===activeId);
+  if(!m)return;
+  document.getElementById('memo-title-input').value=m.title;
+  document.getElementById('memo-textarea').value=m.body;
+  document.getElementById('memo-preview').innerHTML=md(m.body||'');
+}
+function setTab(t){
+  tab=t;
+  document.getElementById('memo-textarea').style.display=t==='edit'?'block':'none';
+  document.getElementById('memo-preview').style.display=t==='preview'?'block':'none';
+  document.getElementById('tab-edit').classList.toggle('active',t==='edit');
+  document.getElementById('tab-prev').classList.toggle('active',t==='preview');
+  if(t==='preview'){
+    const m=memos.find(x=>x.id===activeId);
+    document.getElementById('memo-preview').innerHTML=md(m?.body||'');
+  }
+}
+function selectMemo(id){activeId=id;renderList();renderEditor()}
+function newMemo(){
+  const today=new Date();
+  const d=`${today.getFullYear()}.${String(today.getMonth()+1).padStart(2,'0')}.${String(today.getDate()).padStart(2,'0')}`;
+  memos.unshift({id:nextId++,title:'',body:'',date:d});
+  activeId=memos[0].id;renderList();renderEditor();
+  document.getElementById('memo-title-input').focus();
+}
+function delMemo(id){
+  memos=memos.filter(m=>m.id!==id);
+  if(activeId===id) activeId=memos[0]?.id||null;
+  renderList();renderEditor();
+}
+function onTitleChange(){
+  const m=memos.find(x=>x.id===activeId);
+  if(m){m.title=document.getElementById('memo-title-input').value;renderList()}
+  autoSave();
+}
+function onBodyChange(){
+  const m=memos.find(x=>x.id===activeId);
+  if(m) m.body=document.getElementById('memo-textarea').value;
+  autoSave();
+}
+function autoSave(){
+  clearTimeout(saveTimer);
+  document.getElementById('save-hint').textContent='저장 중...';
+  saveTimer=setTimeout(()=>{renderList();document.getElementById('save-hint').textContent='저장됨'},1000);
+}
+function saveMemo(){
+  renderList();
+  document.getElementById('save-hint').textContent='저장됨';
+  setTimeout(()=>document.getElementById('save-hint').textContent='자동 저장됩니다',1500);
+}
+renderList();renderEditor();
+</script>

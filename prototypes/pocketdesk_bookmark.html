@@ -1,0 +1,129 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.pd{background:#F5F4EF;min-height:500px;font-family:var(--font-sans);padding:20px;position:relative}
+.pd-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.pd-title{font-size:16px;font-weight:500;color:#2D2D2D;display:flex;align-items:center;gap:8px}
+.pd-title i{color:#5B58E8;font-size:18px}
+.pd-btn{background:#5B58E8;color:#fff;border:none;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:6px}
+.pd-btn:hover{background:#4A47D0}
+.cat-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.cat-tab{background:#fff;border:1.5px solid #E8E6DF;border-radius:20px;padding:5px 14px;font-size:12px;color:#888780;cursor:pointer;transition:all 0.15s}
+.cat-tab.active{background:#EEEDFE;border-color:#CECBF6;color:#534AB7;font-weight:500}
+.bm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.bm-item{background:#fff;border-radius:14px;border:1.5px solid #E8E6DF;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;cursor:pointer;transition:border-color 0.15s}
+.bm-item:hover{border-color:#CECBF6}
+.bm-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.bm-name{font-size:13px;color:#2D2D2D;font-weight:500;text-align:center}
+.bm-cat{font-size:11px;color:#B4B2A9}
+.bm-del{position:absolute;top:7px;right:7px;background:none;border:none;cursor:pointer;color:#D3D1C7;font-size:14px;padding:2px;line-height:1;display:none}
+.bm-item:hover .bm-del{display:block}
+.bm-del:hover{color:#E24B4A}
+.bm-add{border:1.5px dashed #D3D1C7;background:#F8F7F3;cursor:pointer}
+.bm-add:hover{border-color:#CECBF6;background:#EEEDFE}
+.modal-bg{position:absolute;inset:0;background:rgba(45,45,45,0.3);display:flex;align-items:center;justify-content:center;border-radius:16px;z-index:10}
+.modal{background:#fff;border-radius:16px;padding:20px;width:300px;border:1.5px solid #E8E6DF}
+.modal-title{font-size:15px;font-weight:500;color:#2D2D2D;margin-bottom:14px}
+.modal input,.modal select{width:100%;border:1.5px solid #E8E6DF;border-radius:10px;padding:9px 12px;font-size:13px;color:#2D2D2D;background:#F8F7F3;outline:none;margin-bottom:10px}
+.modal input:focus,.modal select:focus{border-color:#5B58E8;background:#fff}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.btn-cancel{background:none;border:1.5px solid #E8E6DF;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;color:#888780}
+.btn-ok{background:#5B58E8;border:none;border-radius:8px;padding:7px 14px;font-size:13px;cursor:pointer;color:#fff;font-weight:500}
+</style>
+
+<div class="pd" id="app">
+  <div class="pd-header">
+    <div class="pd-title"><i class="ti ti-bookmark" aria-hidden="true"></i> 북마크</div>
+    <button class="pd-btn" onclick="openModal()"><i class="ti ti-plus" style="font-size:14px"></i> 북마크 추가</button>
+  </div>
+  <div class="cat-tabs" id="cat-tabs"></div>
+  <div class="bm-grid" id="bm-grid"></div>
+  <div class="modal-bg" id="modal" style="display:none">
+    <div class="modal">
+      <div class="modal-title">북마크 추가</div>
+      <input id="bm-name" placeholder="이름 (예: Vue 공식문서)">
+      <input id="bm-url" placeholder="URL (https://...)">
+      <select id="bm-cat">
+        <option value="Docs">Docs</option>
+        <option value="Dev">Dev</option>
+        <option value="Design">Design</option>
+        <option value="DB">DB</option>
+        <option value="AI">AI</option>
+        <option value="Deploy">Deploy</option>
+        <option value="기타">기타</option>
+      </select>
+      <div class="modal-btns">
+        <button class="btn-cancel" onclick="closeModal()">취소</button>
+        <button class="btn-ok" onclick="addBm()">추가</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CAT_COLORS = {
+  Docs:'#EEEDFE','icon-color-docs':'#534AB7',
+  Dev:'#F5F4EF','icon-color-dev':'#2C2C2A',
+  Design:'#FAECE7','icon-color-design':'#993C1D',
+  DB:'#E6F1FB','icon-color-db':'#185FA5',
+  AI:'#EEEDFE','icon-color-ai':'#534AB7',
+  Deploy:'#FAEEDA','icon-color-deploy':'#633806',
+  '기타':'#F1EFE8','icon-color-기타':'#5F5E5A'
+};
+const CAT_ICON = {Docs:'ti-file-text',Dev:'ti-brand-github',Design:'ti-brand-figma',DB:'ti-database',AI:'ti-sparkles',Deploy:'ti-brand-vercel','기타':'ti-link'};
+const BG = {Docs:'#EEEDFE',Dev:'#F5F4EF',Design:'#FAECE7',DB:'#E6F1FB',AI:'#EEEDFE',Deploy:'#FAEEDA','기타':'#F1EFE8'};
+const IC = {Docs:'#534AB7',Dev:'#2C2C2A',Design:'#993C1D',DB:'#185FA5',AI:'#534AB7',Deploy:'#633806','기타':'#5F5E5A'};
+
+let bookmarks = [
+  {id:1,name:'Vue 공식문서',url:'https://vuejs.org',cat:'Docs'},
+  {id:2,name:'Nuxt 공식문서',url:'https://nuxt.com',cat:'Docs'},
+  {id:3,name:'pgAdmin',url:'http://localhost:5050',cat:'DB'},
+  {id:4,name:'Figma',url:'https://figma.com',cat:'Design'},
+  {id:5,name:'GitHub',url:'https://github.com',cat:'Dev'},
+  {id:6,name:'Vercel',url:'https://vercel.com',cat:'Deploy'},
+  {id:7,name:'Claude Code',url:'https://claude.ai',cat:'AI'},
+  {id:8,name:'Sequelize',url:'https://sequelize.org',cat:'Docs'},
+];
+let nextId=9, activeCat='전체';
+
+function allCats(){return['전체',...new Set(bookmarks.map(b=>b.cat))]}
+
+function render(){
+  const tabs = document.getElementById('cat-tabs');
+  const cats = allCats();
+  if(!cats.includes(activeCat)) activeCat='전체';
+  tabs.innerHTML = cats.map(c=>`<button class="cat-tab${activeCat===c?' active':''}" onclick="setCat('${c}')">${c}</button>`).join('');
+
+  const list = activeCat==='전체' ? bookmarks : bookmarks.filter(b=>b.cat===activeCat);
+  const grid = document.getElementById('bm-grid');
+  grid.innerHTML = list.map(b=>`
+    <div class="bm-item" onclick="goUrl('${b.url}')">
+      <button class="bm-del" onclick="event.stopPropagation();delBm(${b.id})" aria-label="삭제"><i class="ti ti-x"></i></button>
+      <div class="bm-icon" style="background:${BG[b.cat]||'#F1EFE8'}"><i class="ti ${CAT_ICON[b.cat]||'ti-link'}" style="color:${IC[b.cat]||'#888780'}"></i></div>
+      <div class="bm-name">${b.name}</div>
+      <div class="bm-cat">${b.cat}</div>
+    </div>
+  `).join('') + `
+    <div class="bm-item bm-add" onclick="openModal()">
+      <div class="bm-icon" style="background:#F1EFE8"><i class="ti ti-plus" style="color:#B4B2A9"></i></div>
+      <div class="bm-name" style="color:#B4B2A9;font-size:12px">추가</div>
+    </div>
+  `;
+}
+
+function setCat(c){activeCat=c;render()}
+function goUrl(url){openLink(url)}
+function delBm(id){bookmarks=bookmarks.filter(b=>b.id!==id);render()}
+function openModal(){document.getElementById('modal').style.display='flex';document.getElementById('bm-name').focus()}
+function closeModal(){document.getElementById('modal').style.display='none';['bm-name','bm-url'].forEach(id=>document.getElementById(id).value='')}
+function addBm(){
+  const name=document.getElementById('bm-name').value.trim();
+  const url=document.getElementById('bm-url').value.trim();
+  const cat=document.getElementById('bm-cat').value;
+  if(!name||!url)return;
+  bookmarks.push({id:nextId++,name,url,cat});
+  closeModal();render();
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+render();
+</script>
