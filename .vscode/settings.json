@@ -1,0 +1,23 @@
+{
+  "editor.formatOnSave": false,
+  "editor.defaultFormatter": null,
+  "[css]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": null,
+    "editor.codeActionsOnSave": []
+  },
+  "[scss]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": null,
+    "editor.codeActionsOnSave": []
+  },
+  "prettier.enable": false,
+  "[vue]": {
+    "editor.defaultFormatter": null,
+    "editor.formatOnSave": false
+  },
+  "[html]": {
+    "editor.defaultFormatter": null,
+    "editor.formatOnSave": false
+  }
+}
