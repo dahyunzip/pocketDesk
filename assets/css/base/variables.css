@@ -1,0 +1,17 @@
+:root {
+  --color-primary: #5b6cf6; --color-secondary: #ffd166; --color-bg: #f7f6f2; --color-surface: #ffffff; --color-border: #e5e3dc; --color-text: #2d2d2d; --color-text-muted: #8a8880;
+  --color-todo: #adb5bd; --color-in-progress: #4dabf7; --color-done: #51cf66; --color-hold: #ffa94d;
+  --color-cat-docs-bg: #eeedfe; --color-cat-docs-icon: #534ab7; --color-cat-dev-bg: #f5f4ef; --color-cat-dev-icon: #2c2c2a; --color-cat-design-bg: #faece7; --color-cat-design-icon: #993c1d; --color-cat-db-bg: #e6f1fb; --color-cat-db-icon: #185fa5; --color-cat-ai-bg: #eeedfe; --color-cat-ai-icon: #534ab7; --color-cat-deploy-bg: #faeeda; --color-cat-deploy-icon: #633806; --color-cat-other-bg: #f1efe8; --color-cat-other-icon: #5f5e5a;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'Noto Sans', sans-serif; --font-mono: 'Menlo', 'Monaco', 'Courier New', monospace;
+  --gap-xs: 4px; --gap-sm: 8px; --gap-md: 16px; --gap-lg: 24px; --gap-xl: 32px;
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 20px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04); --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06); --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.08); --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --transition-fast: 150ms ease-in-out; --transition-base: 250ms ease-in-out; --transition-slow: 350ms ease-in-out;
+  --z-dropdown: 100; --z-modal: 1000; --z-tooltip: 1100;
+}
+
+@media (min-width: 640px) { }
+@media (min-width: 768px) { }
+@media (min-width: 1024px) { }
+@media (min-width: 1280px) { }
+@media (min-width: 1536px) { }
