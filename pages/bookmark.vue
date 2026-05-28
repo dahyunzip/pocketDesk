@@ -3,6 +3,10 @@ import { ref, computed, onMounted } from 'vue'
 import { useBookmarkStore } from '~/stores/useBookmarkStore'
 import BookmarkBoard from '~/components/bookmark/BookmarkBoard.vue'
 
+definePageMeta({
+  layout: 'default'
+})
+
 const bookmarkStore = useBookmarkStore()
 const selectedCategory = ref('전체')
 const showModal = ref(false)

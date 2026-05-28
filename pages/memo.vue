@@ -1,8 +1,12 @@
 <script setup lang="ts">
-import { nextTick } from 'vue'
+import { nextTick, onMounted } from 'vue'
 import { useMemoStore } from '~/stores/useMemoStore'
 import MemoList from '~/components/memo/MemoList.vue'
 import MemoEditor from '~/components/memo/MemoEditor.vue'
+
+definePageMeta({
+  layout: 'default'
+})
 
 const memoStore = useMemoStore()
 
@@ -67,7 +71,7 @@ const handleDeleteMemo = async (id: number) => {
 </template>
 
 <style scoped>
-.memo-page { background: #f5f4ef; padding: 20px; min-height: 100vh; }
+.memo-page { padding: 20px; }
 .memo-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .memo-title-section { display: flex; align-items: center; gap: 8px; }
 .memo-icon { font-size: 1.8rem; }

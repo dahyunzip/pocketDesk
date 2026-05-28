@@ -5,6 +5,10 @@ import CalendarGrid from '~/components/calendar/CalendarGrid.vue'
 import CalendarSidebar from '~/components/calendar/CalendarSidebar.vue'
 import EventModal from '~/components/calendar/EventModal.vue'
 
+definePageMeta({
+  layout: 'default'
+})
+
 const eventStore = useEventStore()
 
 const currentDate = ref(new Date())
@@ -106,7 +110,7 @@ const handleDeleteEvent = async (id: number) => {
 </template>
 
 <style scoped>
-.calendar-page { background: #f5f4ef; padding: 20px; min-height: 100vh; }
+.calendar-page { padding: 20px; }
 .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .calendar-title { display: flex; align-items: center; gap: 8px; }
 .calendar-icon { font-size: 2.88rem; }
