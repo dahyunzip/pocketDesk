@@ -7,6 +7,12 @@ export const sequelize = new Sequelize(databaseUrl, {
   dialect: 'postgres',
   dialectModule: pg,
   logging: false,
+  pool: {
+    max: 5,
+    min: 0,
+    idle: 10000,
+    acquire: 30000
+  },
   define: {
     timestamps: true,
     underscored: true
