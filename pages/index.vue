@@ -250,7 +250,7 @@ const getStatusLabel = (status: string) => {
           <div class="weather-icon">☀️</div>
         </div>
         <div class="weather-tags">
-          <span class="weather-tag">습도 {{ weatherData.humidity }}%</span>
+          <span class="weather-tag">습도 ㅋ{{ weatherData.humidity }}%</span>
           <span class="weather-tag">바람 {{ weatherData.wind }}m/s</span>
         </div>
         <div class="weather-hourly">
