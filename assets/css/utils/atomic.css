@@ -146,4 +146,4 @@
 .transition-fast { transition: all var(--transition-fast); }
 .transition-slow { transition: all var(--transition-slow); }
 .gap-2 { row-gap: 2; column-gap: 2; }
-.gap-1 { row-gap: 1; column-gap: 1; }
+.gap-1 { row-gap: 1; column-gap: 1; }.pie { place-items:end }
