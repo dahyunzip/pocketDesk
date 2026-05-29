@@ -1,17 +1,17 @@
-export default defineEventHandler(async (event) => {
-  const apiKey = process.env.BUS_API_KEY
+export default defineEventHandler(async () => {
+  const apiKey = process.env.API_KEY
   const arsNo = process.env.BUS_ARS_NO
 
   if (!apiKey || !arsNo) {
     return {
       data: null,
-      error: 'BUS_API_KEY and BUS_ARS_NO environment variables are required',
+      error: 'API_KEY and BUS_ARS_NO environment variables are required',
       message: 'Missing environment variables'
     }
   }
 
   try {
-    const url = `https://busan.bus.go.kr/bus3.0/xmlpush/xmlArrList.xml?key=${apiKey}&arsno=${arsNo}`
+    const url = `http://apis.data.go.kr/6260000/BusanBIMS/bitArrByArsno?arsno=${arsNo}&serviceKey=${apiKey}`
     console.log('🚌 Fetching bus info from:', url)
 
     const controller = new AbortController()
@@ -19,9 +19,7 @@ export default defineEventHandler(async (event) => {
 
     const response = await fetch(url, {
       signal: controller.signal,
-      headers: {
-        'Accept': 'application/xml'
-      }
+      headers: { Accept: 'application/xml' }
     })
 
     clearTimeout(timeoutId)
@@ -65,33 +63,26 @@ export default defineEventHandler(async (event) => {
 
 interface BusInfo {
   lineno: string
-  min1: number
-  min2: number
+  min1: string  // "운행대기" 등 문자열로 올 수 있음
+  min2: string
   bustype: string
 }
 
 const parseBusXml = (xml: string): BusInfo[] => {
   const buses: BusInfo[] = []
-
-  const itemRegex = /<bus[^>]*>([\s\S]*?)<\/bus>/g
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g
   let match
 
   while ((match = itemRegex.exec(xml)) !== null) {
-    const itemXml = match[1]
+    const itemXml = match[1] ?? ''
+    if (!itemXml) continue
 
-    const linenoMatch = itemXml.match(/<routeNo[^>]*>([\s\S]*?)<\/routeNo>/i)
-    const min1Match = itemXml.match(/<arrivalMin1[^>]*>([\s\S]*?)<\/arrivalMin1>/i)
-    const min2Match = itemXml.match(/<arrivalMin2[^>]*>([\s\S]*?)<\/arrivalMin2>/i)
-    const bustypeMatch = itemXml.match(/<busType[^>]*>([\s\S]*?)<\/busType>/i)
+    const lineno = itemXml.match(/<lineno>([\s\S]*?)<\/lineno>/)?.[1]?.trim() ?? ''
+    const min1 = itemXml.match(/<min1>([\s\S]*?)<\/min1>/)?.[1]?.trim() ?? ''
+    const min2 = itemXml.match(/<min2>([\s\S]*?)<\/min2>/)?.[1]?.trim() ?? ''
+    const bustype = itemXml.match(/<bustype>([\s\S]*?)<\/bustype>/)?.[1]?.trim() ?? ''
 
-    const lineno = linenoMatch ? linenoMatch[1].trim() : ''
-    const min1 = min1Match ? parseInt(min1Match[1].trim(), 10) : 0
-    const min2 = min2Match ? parseInt(min2Match[1].trim(), 10) : 0
-    const bustype = bustypeMatch ? bustypeMatch[1].trim() : ''
-
-    if (lineno) {
-      buses.push({ lineno, min1, min2, bustype })
-    }
+    if (lineno) buses.push({ lineno, min1, min2, bustype })
   }
 
   return buses

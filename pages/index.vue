@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useBookmarkStore } from '~/stores/useBookmarkStore'
 import { useMemoStore } from '~/stores/useMemoStore'
 import { useTaskStore } from '~/stores/useTaskStore'
@@ -14,13 +14,43 @@ const memoStore = useMemoStore()
 const taskStore = useTaskStore()
 const eventStore = useEventStore()
 
+interface BusInfo {
+  lineno: string
+  min1: string
+  min2: string
+  bustype: string
+}
+
+const busRawData = ref<BusInfo[]>([])
+
 onMounted(async () => {
   await Promise.all([
     bookmarkStore.fetchBookmarks(),
     memoStore.fetchMemos(),
     taskStore.fetchTasks(),
-    eventStore.fetchEvents()
+    eventStore.fetchEvents(),
+    fetchBusData(),
+    fetchWeatherData()
   ])
+})
+
+const fetchBusData = async () => {
+  try {
+    const response = await $fetch('/api/bus')
+    busRawData.value = response.data || []
+  } catch (err) {
+    console.error('버스 정보 조회 실패:', err)
+  }
+}
+
+const busData = computed(() => {
+  return busRawData.value
+    .filter(bus => bus.lineno === '111')
+    .map(bus => ({
+      lineno: bus.lineno,
+      min1: bus.min1,
+      min2: bus.min2
+    }))
 })
 
 const recentMemos = computed(() => memoStore.memos.slice(0, 4))
@@ -35,20 +65,118 @@ const upcomingEvents = computed(() => {
 
 const tasksByStatus = computed(() => taskStore.tasksByStatus)
 
-const weatherData = {
-  temp: '23',
-  condition: '맑음',
-  feelsLike: '21',
-  humidity: '58',
-  wind: '3',
-  pm: '좋음'
+const weatherRawData = ref<any>(null)
+
+const fetchWeatherData = async () => {
+  try {
+    const response = await $fetch('/api/weather')
+    weatherRawData.value = response
+  } catch (err) {
+    console.error('날씨 정보 조회 실패:', err)
+  }
 }
 
-const busData = [
-  { no: '51번', direction: '센텀시티 방향', time: '3분 후' },
-  { no: '139번', direction: '해운대 방향', time: '11분 후' },
-  { no: '51번', direction: '센텀시티 방향', time: '18분 후' }
-]
+const parseWeatherData = () => {
+  if (!weatherRawData.value?.data?.response?.body?.items?.item) {
+    return { temp: '-', humidity: '-', wind: '-', pop: '-' }
+  }
+
+  const items = Array.isArray(weatherRawData.value.data.response.body.items.item)
+    ? weatherRawData.value.data.response.body.items.item
+    : [weatherRawData.value.data.response.body.items.item]
+
+  const now = new Date()
+  const currentHour = String(now.getHours()).padStart(2, '0') + '00'
+
+  const temp = items.find(
+    (item: any) => item.category === 'TMP' && item.fcstTime === currentHour
+  )?.fcstValue || '-'
+
+  const pop = items.find(
+    (item: any) => item.category === 'POP' && item.fcstTime === currentHour
+  )?.fcstValue || '-'
+
+  const humidity = items.find(
+    (item: any) => item.category === 'REH' && item.fcstTime === currentHour
+  )?.fcstValue || '-'
+
+  const wind = items.find(
+    (item: any) => item.category === 'WSP' && item.fcstTime === currentHour
+  )?.fcstValue || '-'
+
+  return { temp, humidity, wind, pop }
+}
+
+const weatherData = computed(() => {
+  const parsed = parseWeatherData()
+  return {
+    temp: parsed.temp,
+    condition: '날씨',
+    feelsLike: '-',
+    humidity: parsed.humidity,
+    wind: parsed.wind,
+    pm: parsed.pop
+  }
+})
+
+const getWeatherIcon = (sky: string, pty: string) => {
+  if (pty !== '0') {
+    if (pty === '1') return '🌧️'
+    if (pty === '2') return '🌨️'
+    if (pty === '3') return '❄️'
+    if (pty === '4') return '⛈️'
+  }
+  if (sky === '1') return '☀️'
+  if (sky === '3') return '⛅'
+  if (sky === '4') return '☁️'
+  return '🌤️'
+}
+
+const hourlyWeather = computed(() => {
+  if (!weatherRawData.value?.data?.response?.body?.items?.item) {
+    return []
+  }
+
+  const items = Array.isArray(weatherRawData.value.data.response.body.items.item)
+    ? weatherRawData.value.data.response.body.items.item
+    : [weatherRawData.value.data.response.body.items.item]
+
+  const now = new Date()
+  const currentHour = now.getHours()
+
+  const tempItems = items
+    .filter((item: any) => item.category === 'TMP')
+    .sort((a: any, b: any) => a.fcstTime.localeCompare(b.fcstTime))
+
+  const seenTimes = new Set<string>()
+  const uniqueItems = tempItems.filter((item: any) => {
+    const time = item.fcstTime
+    if (seenTimes.has(time)) return false
+    seenTimes.add(time)
+    return true
+  })
+
+  const filteredItems = uniqueItems
+    .filter((item: any) => {
+      const itemHour = parseInt(item.fcstTime.substring(0, 2))
+      return itemHour >= currentHour
+    })
+    .slice(0, 8)
+
+  return filteredItems.map((item: any) => {
+    const itemHour = parseInt(item.fcstTime.substring(0, 2))
+    const sky = items.find((i: any) => i.category === 'SKY' && i.fcstTime === item.fcstTime)?.fcstValue || '1'
+    const pty = items.find((i: any) => i.category === 'PTY' && i.fcstTime === item.fcstTime)?.fcstValue || '0'
+
+    const displayTime = itemHour === currentHour ? '지금' : `${itemHour}시`
+
+    return {
+      time: displayTime,
+      temp: item.fcstValue,
+      icon: getWeatherIcon(sky, pty)
+    }
+  })
+})
 
 const BOOKMARK_COLORS: Record<string, { bg: string; icon: string }> = {
   Docs: { bg: '#eeedfe', icon: '#534ab7' },
@@ -124,23 +252,39 @@ const getStatusLabel = (status: string) => {
         <div class="weather-tags">
           <span class="weather-tag">습도 {{ weatherData.humidity }}%</span>
           <span class="weather-tag">바람 {{ weatherData.wind }}m/s</span>
-          <span class="weather-tag">미세먼지 {{ weatherData.pm }}</span>
+        </div>
+        <div class="weather-hourly">
+          <div
+            v-for="(hw, idx) in hourlyWeather"
+            :key="idx"
+            class="hourly-item"
+          >
+            <div class="hourly-time">{{ hw.time }}</div>
+            <div class="hourly-icon">{{ hw.icon }}</div>
+            <div class="hourly-temp">{{ hw.temp }}°</div>
+          </div>
         </div>
       </div>
 
       <!-- Bus Card -->
       <div class="dashboard-card bus-card">
-        <div class="card-label" style="color: #633806">🚌 버스 도착</div>
-        <div
-          v-for="(bus, idx) in busData"
-          :key="idx"
-          class="bus-row"
-        >
-          <div>
-            <div class="bus-no">{{ bus.no }}</div>
-            <div class="bus-time">{{ bus.direction }}</div>
+        <div class="card-label" style="color: #633806">🚌 111번 버스</div>
+        <div v-if="busData.length > 0">
+          <div class="bus-row">
+            <div>
+              <div class="bus-no">가장 빠른 차</div>
+            </div>
+            <span class="bus-badge">{{ busData[0].min1 }}분 후</span>
           </div>
-          <span class="bus-badge">{{ bus.time }}</span>
+          <div class="bus-row">
+            <div>
+              <div class="bus-no">다음 차</div>
+            </div>
+            <span class="bus-badge">{{ busData[0].min2 }}분 후</span>
+          </div>
+        </div>
+        <div v-else class="bus-row" style="justify-content: center; color: #999;">
+          버스 정보 없음
         </div>
       </div>
 
@@ -251,6 +395,11 @@ const getStatusLabel = (status: string) => {
 .weather-icon { font-size: 7.68rem; color: rgba(255, 255, 255, 0.25); }
 .weather-tags { display: flex; gap: 9.6px; margin-top: 19.2px; flex-wrap: wrap; }
 .weather-tag { background: rgba(255, 255, 255, 0.18); border-radius: 20px; padding: 4.8px 16px; font-size: 1.92rem; color: #fff; }
+.weather-hourly { display: flex; gap: 9.6px; margin-top: 19.2px; overflow-x: auto; padding-bottom: 4.8px; }
+.hourly-item { flex-shrink: 0; background: rgba(255, 255, 255, 0.15); border-radius: 12px; padding: 9.6px 12.8px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 3.2px; }
+.hourly-time { font-size: 1.6rem; color: rgba(255, 255, 255, 0.7); }
+.hourly-icon { font-size: 2.4rem; }
+.hourly-temp { font-size: 1.92rem; font-weight: 500; color: #fff; }
 .bus-card { background: #ffd166; border-color: #f0c040; }
 .card-label { color: #633806 !important; }
 .bus-row { display: flex; align-items: center; justify-content: space-between; padding: 12.8px 0; border-bottom: 1px solid rgba(0, 0, 0, 0.06); }
