@@ -8,9 +8,9 @@ export const sequelize = new Sequelize(databaseUrl, {
   dialectModule: pg,
   logging: false,
   pool: {
-    max: 5,
+    max: 1,
     min: 0,
-    idle: 10000,
+    idle: 5000,
     acquire: 30000
   },
   define: {
